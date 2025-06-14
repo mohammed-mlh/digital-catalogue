@@ -113,6 +113,7 @@ export function CartPage() {
           </div>
         </div>
       </div>
+
     </div>
   )
 }

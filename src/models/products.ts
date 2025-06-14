@@ -98,9 +98,9 @@ export async function updateProduct(
   })
 
   return {
-    id,
     ...currentProduct,
     ...product,
+    id,
     image: imageUrl
   } as Product
 }
@@ -125,12 +125,12 @@ export async function deleteProduct(id: string): Promise<void> {
   await deleteDoc(doc(db, COLLECTION_NAME, id))
 }
 
-export async function searchProducts(query: string): Promise<Product[]> {
+export async function searchProducts(searchQuery: string): Promise<Product[]> {
   const productsRef = collection(db, COLLECTION_NAME)
   const q = query(
     productsRef,
-    where("name", ">=", query),
-    where("name", "<=", query + "\uf8ff")
+    where("name", ">=", searchQuery),
+    where("name", "<=", searchQuery + "\uf8ff")
   )
   const snapshot = await getDocs(q)
   return snapshot.docs.map(doc => ({

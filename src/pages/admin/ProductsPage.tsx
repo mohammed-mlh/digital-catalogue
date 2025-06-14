@@ -21,7 +21,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { getProducts, createProduct, updateProduct, deleteProduct } from "@/models/products"
 import { Plus, Pencil, Trash2 } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
-import { Product, ProductInput, ProductOption } from "@/types/product"
+import { Product, ProductInput } from "@/types/product"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -157,7 +164,7 @@ export function ProductsPage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Products</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -231,14 +238,23 @@ export function ProductsPage() {
               </div>
               <div>
                 <Label htmlFor="category">Category</Label>
-                <Input
-                  id="category"
+                <Select
                   value={formData.category}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, category: e.target.value }))
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, category: value }))
                   }
                   required
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="smartphones">Smartphones</SelectItem>
+                    <SelectItem value="laptops">Laptops</SelectItem>
+                    <SelectItem value="tablets">Tablets</SelectItem>
+                    <SelectItem value="accessories">Accessories</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="image">Image URL</Label>
