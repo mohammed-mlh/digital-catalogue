@@ -2,7 +2,6 @@ import { products } from "@/data/products"
 import { ProductCard } from "./ProductCard"
 import { FilterDrawer } from "./FilterDrawer"
 import { useState } from "react"
-import { Product } from "@/types/product"
 
 export function ProductGrid() {
   const [searchQuery, setSearchQuery] = useState("")

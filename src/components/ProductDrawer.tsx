@@ -24,7 +24,7 @@ interface ProductDrawerProps {
 
 export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) {
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
-  const { addItem } = useCart()
+  const { addToCart } = useCart()
 
   // console.log(product)
   const handleOptionChange = (optionName: string, value: string) => {
@@ -35,7 +35,7 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
   }
 
   const handleAddToCart = () => {
-    addItem(product, 1)
+    addToCart(product, 1)
     onClose()
   }
 

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom"
 import { useState } from "react"
 
 export function CheckoutPage() {
-  const { items, totalPrice, clearCart } = useCart()
+  const { items, clearCart } = useCart()
   const navigate = useNavigate()
   const [isProcessing, setIsProcessing] = useState(false)
 

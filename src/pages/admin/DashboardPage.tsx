@@ -1,7 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getProducts } from "@/models/products"
 import { useEffect, useState } from "react"
-import { Product } from "@/types/product"
 
 export function DashboardPage() {
   const [stats, setStats] = useState({
