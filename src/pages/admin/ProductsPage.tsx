@@ -19,7 +19,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { getProducts, createProduct, updateProduct, deleteProduct } from "@/models/products"
-import { Plus, Pencil, Trash2 } from "lucide-react"
+import { Plus, Pencil, Trash2, Search, Filter, X } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 import { Product, ProductInput } from "@/types/product"
 import {
@@ -32,6 +32,7 @@ import {
 
 export function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -47,11 +48,21 @@ export function ProductsPage() {
     reviews: 0,
     options: [],
   })
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  
+  // Search and filter states
+  const [searchTerm, setSearchTerm] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [brandFilter, setBrandFilter] = useState("all")
+  const [priceRange, setPriceRange] = useState("all")
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
 
   useEffect(() => {
     loadProducts()
   }, [])
+
+  useEffect(() => {
+    applyFilters()
+  }, [products, searchTerm, categoryFilter, brandFilter, priceRange])
 
   const loadProducts = async () => {
     try {
@@ -68,6 +79,67 @@ export function ProductsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const applyFilters = () => {
+    let filtered = [...products]
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.model.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    // Category filter
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter(product => product.category === categoryFilter)
+    }
+
+    // Brand filter
+    if (brandFilter !== "all") {
+      filtered = filtered.filter(product => product.brand.toLowerCase().includes(brandFilter.toLowerCase()))
+    }
+
+    // Price range filter
+    if (priceRange !== "all") {
+      filtered = filtered.filter(product => {
+        const price = parseFloat(product.price.replace("$", ""))
+        switch (priceRange) {
+          case "0-100":
+            return price <= 100
+          case "100-500":
+            return price > 100 && price <= 500
+          case "500-1000":
+            return price > 500 && price <= 1000
+          case "1000+":
+            return price > 1000
+          default:
+            return true
+        }
+      })
+    }
+
+    setFilteredProducts(filtered)
+  }
+
+  const clearFilters = () => {
+    setSearchTerm("")
+    setCategoryFilter("all")
+    setBrandFilter("all")
+    setPriceRange("all")
+  }
+
+  const getUniqueBrands = () => {
+    const brands = [...new Set(products.map(product => product.brand))]
+    return brands.sort()
+  }
+
+  const getUniqueCategories = () => {
+    const categories = [...new Set(products.map(product => product.category))]
+    return categories.sort()
   }
 
   const handleEdit = (product: Product) => {
@@ -107,6 +179,17 @@ export function ProductsPage() {
     }
   }
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, image: reader.result as string }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
@@ -130,7 +213,7 @@ export function ProductsPage() {
           description: "Product updated successfully",
         })
       } else {
-        await createProduct(productData, imageFile || undefined)
+        await createProduct(productData)
         toast({
           title: "Success",
           description: "Product added successfully",
@@ -151,7 +234,6 @@ export function ProductsPage() {
         reviews: 0,
         options: [],
       })
-      setImageFile(null)
       loadProducts()
     } catch (error) {
       console.error('Error saving product:', error)
@@ -164,111 +246,81 @@ export function ProductsPage() {
   }
 
   return (
-    <div className="">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Products</h1>
+    <div className="min-h-screen py-8 px-2 md:px-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">Products</h1>
+            <p className="text-gray-500 text-base">Manage your product catalog</p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex items-center gap-2 rounded-lg border-gray-200 hover:bg-gray-100"
+              onClick={() => setIsFilterModalOpen(true)}
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+            </Button>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-md rounded-lg px-5 py-2">
               <Plus className="w-4 h-4 mr-2" />
               Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl shadow-xl">
             <DialogHeader>
-              <DialogTitle>
+                  <DialogTitle className="text-xl font-bold">
                 {editingProduct ? "Edit Product" : "Add New Product"}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="name">Name</Label>
+                      <Label htmlFor="name">Name *</Label>
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, name: e.target.value }))
-                  }
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="brand">Brand</Label>
+                      <Label htmlFor="brand">Brand *</Label>
                 <Input
                   id="brand"
                   value={formData.brand}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, brand: e.target.value }))
-                  }
+                        onChange={(e) => setFormData(prev => ({ ...prev, brand: e.target.value }))}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="model">Model</Label>
+                      <Label htmlFor="model">Model *</Label>
                 <Input
                   id="model"
                   value={formData.model}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, model: e.target.value }))
-                  }
+                        onChange={(e) => setFormData(prev => ({ ...prev, model: e.target.value }))}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, description: e.target.value }))
-                  }
+                      <Label htmlFor="category">Category *</Label>
+                      <Input
+                        id="category"
+                        value={formData.category}
+                        onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="price">Price</Label>
+                      <Label htmlFor="price">Price *</Label>
                 <Input
                   id="price"
                   value={formData.price}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, price: e.target.value }))
-                  }
+                        onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                        placeholder="$99.99"
                   required
-                />
-              </div>
-              <div>
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, category: value }))
-                  }
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="smartphones">Smartphones</SelectItem>
-                    <SelectItem value="laptops">Laptops</SelectItem>
-                    <SelectItem value="tablets">Tablets</SelectItem>
-                    <SelectItem value="accessories">Accessories</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="image">Image URL</Label>
-                <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) {
-                      setImageFile(file)
-                      setFormData((prev) => ({ ...prev, image: URL.createObjectURL(file) }))
-                    }
-                  }}
                 />
               </div>
               <div>
@@ -280,10 +332,7 @@ export function ProductsPage() {
                   max="5"
                   step="0.1"
                   value={formData.rating}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, rating: Number(e.target.value) }))
-                  }
-                  required
+                        onChange={(e) => setFormData(prev => ({ ...prev, rating: Number(e.target.value) }))}
                 />
               </div>
               <div>
@@ -293,51 +342,203 @@ export function ProductsPage() {
                   type="number"
                   min="0"
                   value={formData.reviews}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, reviews: Number(e.target.value) }))
-                  }
+                        onChange={(e) => setFormData(prev => ({ ...prev, reviews: Number(e.target.value) }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="image">Image</Label>
+                      <Input
+                        id="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="description">Description *</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                      rows={3}
                   required
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+                      {editingProduct ? "Update Product" : "Add Product"}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
+        {/* Filter Modal */}
+        <Dialog open={isFilterModalOpen} onOpenChange={setIsFilterModalOpen}>
+          <DialogContent className="max-w-md w-full rounded-xl shadow-xl">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                <Filter className="h-5 w-5" /> Filters
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 mt-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search products by name, brand, or model..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 rounded-lg border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
-              <Button type="submit">
-                {editingProduct ? "Update Product" : "Add Product"}
+              <div>
+                <Label htmlFor="category-filter" className="text-sm font-medium">Category</Label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="rounded-lg border-gray-200">
+                    <SelectValue placeholder="All categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All categories</SelectItem>
+                    {getUniqueCategories().map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="brand-filter" className="text-sm font-medium">Brand</Label>
+                <Select value={brandFilter} onValueChange={setBrandFilter}>
+                  <SelectTrigger className="rounded-lg border-gray-200">
+                    <SelectValue placeholder="All brands" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All brands</SelectItem>
+                    {getUniqueBrands().map((brand) => (
+                      <SelectItem key={brand} value={brand}>
+                        {brand}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="price-filter" className="text-sm font-medium">Price Range</Label>
+                <Select value={priceRange} onValueChange={setPriceRange}>
+                  <SelectTrigger className="rounded-lg border-gray-200">
+                    <SelectValue placeholder="All prices" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All prices</SelectItem>
+                    <SelectItem value="0-100">$0 - $100</SelectItem>
+                    <SelectItem value="100-500">$100 - $500</SelectItem>
+                    <SelectItem value="500-1000">$500 - $1000</SelectItem>
+                    <SelectItem value="1000+">$1000+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                variant="outline"
+                onClick={clearFilters}
+                className="flex items-center gap-2 rounded-lg border-gray-200 hover:bg-gray-100 mt-2"
+              >
+                <X className="h-4 w-4" />
+                Clear Filters
               </Button>
-            </form>
+            </div>
           </DialogContent>
         </Dialog>
+
+        {/* Active Filters Summary */}
+        {(searchTerm || categoryFilter !== "all" || brandFilter !== "all" || priceRange !== "all") && (
+          <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-gray-600">
+            <Filter className="h-4 w-4" />
+            <span>Active filters:</span>
+            {searchTerm && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                Search: "{searchTerm}"
+              </span>
+            )}
+            {categoryFilter !== "all" && (
+              <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                Category: {categoryFilter}
+              </span>
+            )}
+            {brandFilter !== "all" && (
+              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                Brand: {brandFilter}
+              </span>
+            )}
+            {priceRange !== "all" && (
+              <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                Price: {priceRange === "0-100" ? "$0 - $100" : 
+                       priceRange === "100-500" ? "$100 - $500" :
+                       priceRange === "500-1000" ? "$500 - $1000" : "$1000+"}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Results Count */}
+        <div className="mb-4 text-sm text-gray-600">
+          Showing {filteredProducts.length} of {products.length} products
       </div>
 
-      {loading ? (
-        <div>Loading...</div>
-      ) : (
+        <div className="bg-white/90 rounded-2xl shadow-lg border border-gray-100 overflow-x-auto">
         <Table>
-          <TableHeader>
+            <TableHeader className="sticky top-0 bg-white/95 z-10 shadow-sm">
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Brand</TableHead>
-              <TableHead>Model</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Rating</TableHead>
-              <TableHead>Reviews</TableHead>
-              <TableHead>Actions</TableHead>
+                <TableHead className="py-4 px-6 text-gray-700 font-semibold text-base">Name</TableHead>
+                <TableHead className="py-4 px-6 text-gray-700 font-semibold text-base">Brand / Model</TableHead>
+                <TableHead className="py-4 px-6 text-gray-700 font-semibold text-base">Price</TableHead>
+                <TableHead className="py-4 px-6 text-gray-700 font-semibold text-base">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell>{product.name}</TableCell>
-                <TableCell>{product.brand}</TableCell>
-                <TableCell>{product.model}</TableCell>
-                <TableCell>{product.category}</TableCell>
-                <TableCell>{product.price}</TableCell>
-                <TableCell>{product.rating}</TableCell>
-                <TableCell>{product.reviews}</TableCell>
-                <TableCell>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-gray-400 text-lg">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : filteredProducts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-gray-400 text-lg">
+                    {searchTerm || categoryFilter !== "all" || brandFilter !== "all" || priceRange !== "all"
+                      ? "No products found matching your filters."
+                      : "No products available."}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredProducts.map((product) => (
+                  <TableRow
+                    key={product.id}
+                    className="hover:bg-blue-50/40 transition-colors group"
+                  >
+                    <TableCell className="py-4 px-6 text-gray-900 font-medium">
+                      {product.name}
+                    </TableCell>
+                    <TableCell className="py-4 px-6 text-gray-700">
+                      <span className="font-semibold text-gray-800">{product.brand}</span>
+                      <span className="text-gray-400"> / </span>
+                      <span>{product.model}</span>
+                    </TableCell>
+                    <TableCell className="py-4 px-6 text-blue-700 font-bold">
+                      {product.price} DHs
+                    </TableCell>
+                    <TableCell className="py-4 px-6">
                   <div className="flex space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
+                          className="rounded-lg border-gray-200 bg-gray-50 hover:bg-blue-100 text-blue-700 border transition-colors shadow-sm"
                       onClick={() => handleEdit(product)}
                     >
                       <Pencil className="w-4 h-4" />
@@ -345,6 +546,7 @@ export function ProductsPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                          className="rounded-lg border-gray-200 bg-gray-50 hover:bg-red-100 text-red-700 border transition-colors shadow-sm"
                       onClick={() => handleDelete(product.id)}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -352,10 +554,12 @@ export function ProductsPage() {
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+                ))
+              )}
           </TableBody>
         </Table>
-      )}
+        </div>
+      </div>
     </div>
   )
 } 

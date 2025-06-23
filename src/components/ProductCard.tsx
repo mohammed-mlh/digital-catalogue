@@ -9,9 +9,21 @@ interface ProductCardProps extends Product {}
 export function ProductCard(product: ProductCardProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
+  const handleCardClick = () => {
+    setIsDrawerOpen(true)
+  }
+
+  const handleEyeButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation() // Prevent card click when clicking the eye button
+    setIsDrawerOpen(true)
+  }
+
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+      <div 
+        className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+        onClick={handleCardClick}
+      >
         <div className="relative">
           <img
             src={product.image}
@@ -19,7 +31,7 @@ export function ProductCard(product: ProductCardProps) {
             className="w-full h-40 object-cover"
           />
           <Button
-            onClick={() => setIsDrawerOpen(true)}
+            onClick={handleEyeButtonClick}
             size="icon"
             variant="secondary"
             className="absolute top-2 right-2 h-8 w-8 rounded-full bg-white/90 hover:bg-white"

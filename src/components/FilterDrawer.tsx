@@ -25,7 +25,7 @@ export function FilterDrawer({
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button variant="outline" className="w-full sm:w-auto">
+        <Button variant="default" className="w-full sm:w-auto">
           <SlidersHorizontal className="mr-2 h-4 w-4" />
           Filters
         </Button>

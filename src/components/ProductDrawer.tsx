@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { useCart } from "@/contexts/CartContext"
@@ -24,6 +25,7 @@ interface ProductDrawerProps {
 
 export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) {
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
+  const [quantity, setQuantity] = useState(1)
   const { addToCart } = useCart()
 
   // console.log(product)
@@ -34,9 +36,16 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
     }))
   }
 
+  const handleQuantityChange = (value: string) => {
+    const numValue = parseInt(value) || 1
+    setQuantity(Math.max(1, numValue))
+  }
+
   const handleAddToCart = () => {
-    addToCart(product, 1)
+    addToCart(product, quantity)
     onClose()
+    // Reset quantity when drawer closes
+    setQuantity(1)
   }
 
   const areAllOptionsSelected = product.options.every(
@@ -73,6 +82,18 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
                 <span className="text-sm font-medium text-black">{product.rating}/5</span>
                 <span className="text-sm text-gray-500">({product.reviews} reviews)</span>
               </div>
+            </div>
+
+            {/* Quantity Selection */}
+            <div className="space-y-2 bg-white p-3 rounded-lg shadow-sm border">
+              <Label className="text-sm text-gray-700">Quantity</Label>
+              <Input
+                type="number"
+                min="1"
+                value={quantity}
+                onChange={(e) => handleQuantityChange(e.target.value)}
+                className="w-24"
+              />
             </div>
 
             {product.options.length > 0 && (
@@ -127,7 +148,7 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
               disabled={!areAllOptionsSelected}
             >
               <ShoppingCart className="mr-2 h-4 w-4" />
-              Add to Cart
+              Add to Cart ({quantity})
             </Button>
           </div>
         </DrawerFooter>

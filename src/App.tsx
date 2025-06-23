@@ -9,6 +9,8 @@ import { CartPage } from "@/pages/CartPage"
 import { CheckoutPage } from "@/pages/CheckoutPage"
 import { DashboardPage } from "@/pages/admin/DashboardPage"
 import { ProductsPage } from "@/pages/admin/ProductsPage"
+import { SettingsPage } from "./pages/admin/SettingsPage"
+import { OrdersPage } from "./pages/admin/OrdersPage"
 
 function App() {
   return (
@@ -23,7 +25,9 @@ function App() {
             </Route>
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<DashboardPage />} />
+              <Route path="/admin/settings" element={<SettingsPage />} />
               <Route path="/admin/products" element={<ProductsPage />} />
+              <Route path="/admin/orders" element={<OrdersPage />} />
             </Route>
           </Routes>
           <Toaster />
