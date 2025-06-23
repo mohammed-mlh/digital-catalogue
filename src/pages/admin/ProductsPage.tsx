@@ -314,12 +314,20 @@ export function ProductsPage() {
                 />
               </div>
               <div>
-                      <Label htmlFor="price">Price *</Label>
+                <Label htmlFor="price">Price *</Label>
                 <Input
                   id="price"
                   value={formData.price}
-                        onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                        placeholder="$99.99"
+                  onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="col-span-2">
+                <Label htmlFor="description">Description *</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   required
                 />
               </div>
@@ -332,7 +340,7 @@ export function ProductsPage() {
                   max="5"
                   step="0.1"
                   value={formData.rating}
-                        onChange={(e) => setFormData(prev => ({ ...prev, rating: Number(e.target.value) }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, rating: parseFloat(e.target.value) }))}
                 />
               </div>
               <div>
@@ -342,40 +350,146 @@ export function ProductsPage() {
                   type="number"
                   min="0"
                   value={formData.reviews}
-                        onChange={(e) => setFormData(prev => ({ ...prev, reviews: Number(e.target.value) }))}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="image">Image</Label>
-                      <Input
-                        id="image"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="description">Description *</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                      rows={3}
+                  onChange={(e) => setFormData(prev => ({ ...prev, reviews: parseInt(e.target.value) }))}
+                />
+              </div>
+              <div className="col-span-2">
+                <Label htmlFor="image">Image URL *</Label>
+                <Input
+                  id="image"
+                  value={formData.image}
+                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
                   required
-                    />
+                />
+              </div>
+              
+              {/* Product Options Section */}
+              <div className="col-span-2 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Product Options</Label>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
+                      options: [...(prev.options || []), { name: '', options: [''] }]
+                    }))}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Option
+                  </Button>
+                </div>
+                
+                {formData.options?.map((option, optionIndex) => (
+                  <div key={optionIndex} className="space-y-2 p-4 border rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <Label>Option {optionIndex + 1}</Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            options: prev.options?.filter((_, i) => i !== optionIndex) || []
+                          }))
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Option Name</Label>
+                        <Input
+                          value={option.name}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              options: prev.options?.map((opt, i) =>
+                                i === optionIndex ? { ...opt, name: e.target.value } : opt
+                              ) || []
+                            }))
+                          }}
+                          placeholder="e.g., Color, Size, Material"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label>Values</Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                options: prev.options?.map((opt, i) =>
+                                  i === optionIndex ? { ...opt, options: [...opt.options, ''] } : opt
+                                ) || []
+                              }))
+                            }}
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Value
+                          </Button>
+                        </div>
+                        
+                        {option.options.map((value, valueIndex) => (
+                          <div key={valueIndex} className="flex gap-2">
+                            <Input
+                              value={value}
+                              onChange={(e) => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  options: prev.options?.map((opt, i) =>
+                                    i === optionIndex ? {
+                                      ...opt,
+                                      options: opt.options.map((v, j) =>
+                                        j === valueIndex ? e.target.value : v
+                                      )
+                                    } : opt
+                                  ) || []
+                                }))
+                              }}
+                              placeholder="Option value"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  options: prev.options?.map((opt, i) =>
+                                    i === optionIndex ? {
+                                      ...opt,
+                                      options: opt.options.filter((_, j) => j !== valueIndex)
+                                    } : opt
+                                  ) || []
+                                }))
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-end space-x-2 pt-4">
-                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
-                      {editingProduct ? "Update Product" : "Add Product"}
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold">
+                {editingProduct ? "Update Product" : "Add Product"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
           </div>
         </div>
 
