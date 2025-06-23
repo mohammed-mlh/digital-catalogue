@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getProducts } from "@/models/products"
 import { useEffect, useState } from "react"
-import { Package, Tag, DollarSign, Star, TrendingUp, Users } from "lucide-react"
+import { Package, Tag, DollarSign } from "lucide-react"
 
 interface DashboardStats {
   totalProducts: number
