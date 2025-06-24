@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -56,32 +56,7 @@ export function ProductsPage() {
   const [priceRange, setPriceRange] = useState("all")
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
 
-  useEffect(() => {
-    loadProducts()
-  }, [])
-
-  useEffect(() => {
-    applyFilters()
-  }, [products, searchTerm, categoryFilter, brandFilter, priceRange])
-
-  const loadProducts = async () => {
-    try {
-      setLoading(true)
-      const data = await getProducts()
-      setProducts(data)
-    } catch (error) {
-      console.error("Error loading products:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load products",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...products]
 
     // Search filter
@@ -123,6 +98,31 @@ export function ProductsPage() {
     }
 
     setFilteredProducts(filtered)
+  }, [products, searchTerm, categoryFilter, brandFilter, priceRange])
+
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
+  useEffect(() => {
+    applyFilters()
+  }, [applyFilters])
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true)
+      const data = await getProducts()
+      setProducts(data)
+    } catch (error) {
+      console.error("Error loading products:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load products",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const clearFilters = () => {
@@ -182,9 +182,38 @@ export function ProductsPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Error",
+          description: "Please upload an image file",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024 // 5MB in bytes
+      if (file.size > maxSize) {
+        toast({
+          title: "Error",
+          description: "Image size should be less than 5MB",
+          variant: "destructive",
+        })
+        return
+      }
+
       const reader = new FileReader()
       reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, image: reader.result as string }))
+        const result = reader.result as string
+        setFormData(prev => ({ ...prev, image: result }))
+      }
+      reader.onerror = () => {
+        toast({
+          title: "Error",
+          description: "Failed to read image file",
+          variant: "destructive",
+        })
       }
       reader.readAsDataURL(file)
     }
@@ -354,13 +383,25 @@ export function ProductsPage() {
                 />
               </div>
               <div className="col-span-2">
-                <Label htmlFor="image">Image URL *</Label>
-                <Input
-                  id="image"
-                  value={formData.image}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-                  required
-                />
+                <Label htmlFor="image">Image Upload *</Label>
+                <div className="space-y-2">
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="mb-2"
+                  />
+                  {formData.image && (
+                    <div className="mt-2">
+                      <img 
+                        src={formData.image} 
+                        alt="Preview" 
+                        className="w-32 h-32 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
               
               {/* Product Options Section */}
