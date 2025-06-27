@@ -1,5 +1,5 @@
 import { Outlet, Link } from "react-router-dom"
-import { LayoutDashboard, Package, Settings, ShoppingCart, Menu } from "lucide-react"
+import { LayoutDashboard, Package, Settings, ShoppingCart, Menu, List } from "lucide-react"
 import { Button } from "./ui/button"
 import { useState } from "react"
 
@@ -36,6 +36,12 @@ export function AdminLayout() {
                   Products
                 </Button>
               </Link>
+              <Link to="/admin/options">
+                <Button variant="ghost" className="flex items-center gap-2 w-full sm:w-auto justify-start">
+                  <List className="h-4 w-4" />
+                  Options
+                </Button>
+              </Link>
               <Link to="/admin/orders">
                 <Button variant="ghost" className="flex items-center gap-2 w-full sm:w-auto justify-start">
                   <ShoppingCart className="h-4 w-4" />
@@ -52,9 +58,9 @@ export function AdminLayout() {
           </div>
         </div>
       </header>
-      <main className="container mx-auto px-2 py-8">
+      <main className="lg:container lg:mx-auto px-4 py-8">
         <Outlet />
       </main>
     </div>
   )
-} 
+}

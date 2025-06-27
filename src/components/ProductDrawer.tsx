@@ -15,18 +15,20 @@ import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { useCart } from "@/contexts/CartContext"
 import { ShoppingCart } from "lucide-react"
-import { Product } from "@/types/product"
+import { ProductWithOptions } from "@/types/product"
 
 interface ProductDrawerProps {
   isOpen: boolean
   onClose: () => void
-  product: Product
+  product: ProductWithOptions
 }
 
 export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) {
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
   const [quantity, setQuantity] = useState(1)
   const { addToCart } = useCart()
+  console.log(product);
+  
 
   // console.log(product)
   const handleOptionChange = (optionName: string, value: string) => {
@@ -34,6 +36,7 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
       ...prev,
       [optionName]: value
     }))
+
   }
 
   const handleQuantityChange = (value: string) => {
@@ -42,7 +45,10 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
   }
 
   const handleAddToCart = () => {
-    addToCart(product, quantity)
+    // Convert ProductWithOptions to Product by omitting 'options' and adding optionIds: []
+    const { options, ...rest } = product;
+    const productWithoutOptions = { ...rest, optionIds: [] };
+    addToCart(productWithoutOptions, quantity)
     onClose()
     // Reset quantity when drawer closes
     setQuantity(1)
@@ -109,7 +115,7 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
                       onValueChange={(value: string) => handleOptionChange(option.name, value)}
                       className="flex flex-wrap gap-3"
                     >
-                      {option.options.map((opt) => (
+                      {option.values.map((opt) => (
                         <div key={opt} className="flex items-center">
                           <RadioGroupItem
                             value={opt}

@@ -13,6 +13,8 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
 import { db, storage } from "@/lib/firebase"
 import { Product } from "@/types/product"
+import { getOptionById } from "./options"
+import { Option } from "@/types/option"
 
 const COLLECTION_NAME = "products"
 
@@ -151,3 +153,33 @@ export async function getProductsByCategory(category: string): Promise<Product[]
     ...doc.data()
   })) as Product[]
 } 
+
+export async function getProductsWithOptions(): Promise<(Product & { options: Option[] })[]> {
+  const products = await getProducts();
+
+  // For each product, fetch all options by optionIds in parallel
+  const productsWithOptions = await Promise.all(
+    products.map(async (product) => {
+      const options = await Promise.all(
+        (product.optionIds || []).map(async (optionId) => {
+          const option = await getOptionById(optionId);
+          if (!option) {
+            console.warn(`Option with id ${optionId} not found`);
+            return null;
+          }
+          return option;
+        })
+      );
+
+      // Filter out nulls if any option is missing
+      const filteredOptions = options.filter((opt): opt is Option => opt !== null);
+
+      return {
+        ...product,
+        options: filteredOptions,
+      };
+    })
+  );
+
+  return productsWithOptions;
+}

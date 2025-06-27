@@ -2,9 +2,9 @@ import { Button } from "./ui/button"
 import { Eye } from "lucide-react"
 import { useState } from "react"
 import { ProductDrawer } from "./ProductDrawer"
-import { Product } from "@/types/product"
+import { ProductWithOptions } from "@/types/product"
 
-interface ProductCardProps extends Product {}
+interface ProductCardProps extends ProductWithOptions {}
 
 export function ProductCard(product: ProductCardProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)

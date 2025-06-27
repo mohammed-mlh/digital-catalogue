@@ -2,7 +2,16 @@ import { useEffect, useState } from "react"
 import { collection, getDocs, orderBy, query } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
-import { Calendar, X, Download } from "lucide-react"
+import { Calendar, X, Download, Filter } from "lucide-react"
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog"
 
 interface Order {
   id: string
@@ -38,6 +47,8 @@ export function OrdersPage() {
   const [error, setError] = useState("")
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -58,7 +69,7 @@ export function OrdersPage() {
     fetchOrders()
   }, [])
 
-  // Date filter logic
+  // Date and search filter logic
   const filteredOrders = orders.filter(order => {
     if (!order.createdAt?.seconds) return false
     const orderDate = new Date(order.createdAt.seconds * 1000)
@@ -70,7 +81,14 @@ export function OrdersPage() {
     if (endDate) {
       beforeEnd = orderDate <= new Date(endDate + "T23:59:59")
     }
-    return afterStart && beforeEnd
+    // Search filter (name, phone, city)
+    const search = searchQuery.trim().toLowerCase()
+    const matchesSearch =
+      !search ||
+      order.name.toLowerCase().includes(search) ||
+      order.phone.toLowerCase().includes(search) ||
+      order.city.toLowerCase().includes(search)
+    return afterStart && beforeEnd && matchesSearch
   })
 
   const clearDates = () => {
@@ -92,69 +110,25 @@ export function OrdersPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-2 py-8">
-      <h1 className="text-2xl font-bold mb-6">Orders</h1>
-      {/* Beautiful Date Filters UI */}
-      <div className="mb-8">
-        <div className="bg-gradient-to-tr from-white via-gray-50 to-blue-50 rounded-2xl shadow-lg px-8 py-6 flex flex-col md:flex-row md:items-center gap-6 border border-gray-100">
-          <div className="flex items-center gap-3 mb-2 md:mb-0">
-            <Calendar className="h-5 w-5 text-blue-500" />
-            <span className="text-lg font-semibold text-gray-800">Filter by Date</span>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4 flex-1">
-            <div className="flex flex-col flex-1">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={e => setStartDate(e.target.value)}
-                  className="rounded-lg border border-gray-200 px-4 py-2 w-full text-base focus:ring-2 focus:ring-blue-200 focus:border-blue-400 pr-10 transition-all duration-150 hover:border-blue-300 outline-none bg-white shadow-sm"
-                />
-                <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 h-4 w-4 pointer-events-none" />
-              </div>
-            </div>
-            <div className="flex flex-col flex-1">
-              <label className="block text-xs font-medium text-gray-600 mb-1">End Date</label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={e => setEndDate(e.target.value)}
-                  className="rounded-lg border border-gray-200 px-4 py-2 w-full text-base focus:ring-2 focus:ring-blue-200 focus:border-blue-400 pr-10 transition-all duration-150 hover:border-blue-300 outline-none bg-white shadow-sm"
-                />
-                <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 h-4 w-4 pointer-events-none" />
-              </div>
-            </div>
-            <div className="flex flex-col justify-end">
-              <label className="block text-xs font-medium text-transparent mb-1">Clear</label>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={clearDates}
-                className="flex items-center gap-2 border-gray-200 hover:bg-gray-100 rounded-lg px-4 py-2 text-gray-700"
-              >
-                <X className="h-4 w-4" />
-                Clear
-              </Button>
-            </div>
-          </div>
-          <div className="text-sm text-gray-600 md:ml-auto whitespace-nowrap mt-4 md:mt-0">
-            Showing <span className="font-semibold text-blue-700">{filteredOrders.length}</span> of {orders.length} orders
-          </div>
+    <div className="">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Orders</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" className="flex items-center gap-2 border-gray-200 hover:bg-blue-50 text-blue-700 rounded-lg shadow-sm" onClick={() => setIsFilterOpen(true)}>
+            <Filter className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={handleExportCSV}
+            variant="outline"
+            className="flex items-center gap-2 border-gray-200 hover:bg-blue-50 text-blue-700 rounded-lg shadow-sm"
+          >
+            <Download className="h-4 w-4" />
+
+          </Button>
         </div>
       </div>
-      {/* Export Button */}
-      <div className="flex justify-end mb-4">
-        <Button
-          onClick={handleExportCSV}
-          variant="outline"
-          className="flex items-center gap-2 border-gray-200 hover:bg-blue-50 text-blue-700 rounded-lg shadow-sm"
-        >
-          <Download className="h-4 w-4" />
-          Export CSV
-        </Button>
-      </div>
+
+
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
         {loading ? (
           <div className="text-center py-12 text-gray-500">Loading...</div>
@@ -202,6 +176,62 @@ export function OrdersPage() {
             </tbody>
           </table>
         )}
+      </div>
+
+      {/* Filters Modal Trigger Button */}
+      <div className="mb-8 flex justify-end">
+        <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Filter Orders</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4">
+              {/* Search Query Input */}
+              <div className="flex flex-col">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Search (Name, Phone, City)</label>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Search by name, phone, or city..."
+                  className="rounded-lg border border-gray-200 px-4 py-2 w-full text-base focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition-all duration-150 hover:border-blue-300 outline-none bg-white shadow-sm"
+                />
+              </div>
+              {/* Start Date */}
+              <div className="flex flex-col">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={e => setStartDate(e.target.value)}
+                    className="rounded-lg border border-gray-200 px-4 py-2 w-full text-base focus:ring-2 focus:ring-blue-200 focus:border-blue-400 pr-10 transition-all duration-150 hover:border-blue-300 outline-none bg-white shadow-sm"
+                  />
+                </div>
+              </div>
+              {/* End Date */}
+              <div className="flex flex-col">
+                <label className="block text-xs font-medium text-gray-600 mb-1">End Date</label>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={e => setEndDate(e.target.value)}
+                    className="rounded-lg border border-gray-200 px-4 py-2 w-full text-base focus:ring-2 focus:ring-blue-200 focus:border-blue-400 pr-10 transition-all duration-150 hover:border-blue-300 outline-none bg-white shadow-sm"
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={clearDates} className="flex items-center gap-2 border-gray-200 hover:bg-gray-100 rounded-lg px-4 py-2 text-gray-700">
+                Clear
+              </Button>
+              <DialogClose asChild>
+                <Button type="button" variant="default">Apply</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

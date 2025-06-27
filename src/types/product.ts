@@ -1,8 +1,3 @@
-export interface ProductOption {
-  name: string
-  options: string[]
-}
-
 export interface Product {
   id: string
   name: string
@@ -14,7 +9,13 @@ export interface Product {
   description: string
   rating: number
   reviews: number
-  options: ProductOption[]
+  optionIds: string[]
+}
+
+import { Option } from "./option";
+
+export interface ProductWithOptions extends Omit<Product, 'optionIds'> {
+  options: Option[];
 }
 
 export type ProductInput = Omit<Product, 'id'> 

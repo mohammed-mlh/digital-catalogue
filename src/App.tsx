@@ -11,6 +11,7 @@ import { DashboardPage } from "@/pages/admin/DashboardPage"
 import { ProductsPage } from "@/pages/admin/ProductsPage"
 import { SettingsPage } from "./pages/admin/SettingsPage"
 import { OrdersPage } from "./pages/admin/OrdersPage"
+import { OptionsPage } from "./pages/admin/OptionsPage"
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
               <Route path="/admin" element={<DashboardPage />} />
               <Route path="/admin/settings" element={<SettingsPage />} />
               <Route path="/admin/products" element={<ProductsPage />} />
+              <Route path="/admin/options" element={<OptionsPage />} />
               <Route path="/admin/orders" element={<OrdersPage />} />
             </Route>
           </Routes>

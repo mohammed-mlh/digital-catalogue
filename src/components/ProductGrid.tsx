@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react"
 import { ProductCard } from "./ProductCard"
 import { FilterDrawer } from "./FilterDrawer"
-import { collection, getDocs } from "firebase/firestore"
-import { db } from "@/lib/firebase"
-import { Product } from "@/types/product"
+import { getProductsWithOptions } from "@/models/products"
+import { ProductWithOptions } from "@/types/product"
 
 export function ProductGrid() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<ProductWithOptions[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
@@ -21,8 +20,8 @@ export function ProductGrid() {
       setLoading(true)
       setError("")
       try {
-        const snap = await getDocs(collection(db, "products"))
-        setProducts(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)))
+        const prds = await getProductsWithOptions();
+        setProducts(prds)
       } catch (err) {
         setError("Failed to load products.")
       } finally {
