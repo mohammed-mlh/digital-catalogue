@@ -38,13 +38,26 @@ export function CheckoutPage() {
       const address = addressRef.current?.value || ""
       const city = cityRef.current?.value || ""
 
+      // Prepare order items according to new schema
+      const orderItems = items.map(item => ({
+        productName: `${item.brand} ${item.model} ${item.name}`.trim(),
+        quantity: item.quantity,
+        selectedOptions: item.selectedOptions || {},
+        productPrice: item.price,
+      }))
+      // Calculate total price
+      const totalPrice = items.reduce((sum, item) => {
+        const price = parseFloat(item.price.replace(/[^\d.]/g, "")) || 0;
+        return sum + price * item.quantity;
+      }, 0)
       // Save order to Firestore
       const orderData = {
         name,
         phone,
         address,
         city,
-        items,
+        items: orderItems,
+        totalPrice,
         createdAt: Timestamp.now(),
       }
       await addDoc(collection(db, "orders"), orderData)
@@ -58,10 +71,14 @@ export function CheckoutPage() {
       if (!whatsapp) throw new Error("WhatsApp number not set in settings.")
 
       // Compose WhatsApp message
-      const itemLines = items.map(
-        (item, idx) =>
-          `${idx + 1}. ${item.name} (${item.brand} ${item.model}) x${item.quantity} - ${item.price} DHs`
-      ).join("%0A")
+      const itemLines = orderItems.map(
+        (item, idx) => {
+          const optionsStr = Object.entries(item.selectedOptions)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(", ");
+          return `${idx + 1}. ${item.productName}${optionsStr ? ` (${optionsStr})` : ""} x ${item.quantity} (price: ${item.productPrice})`;
+        }
+      ).join("%0A");
       const message =
         `Bonjour, je souhaite commander :%0A` +
         itemLines +

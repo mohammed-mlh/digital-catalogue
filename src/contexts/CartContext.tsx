@@ -8,7 +8,7 @@ interface CartItem extends Product {
 
 interface CartContextType {
   items: CartItem[]
-  addToCart: (product: Product, quantity?: number) => void
+  addToCart: (product: Product, quantity?: number, selectedOptions?: Record<string, string>) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
@@ -21,17 +21,17 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
-  const addToCart = (product: Product, quantity: number = 1) => {
+  const addToCart = (product: Product, quantity: number = 1, selectedOptions?: Record<string, string>) => {
     setItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.id === product.id)
+      const existingItem = prevItems.find((item) => item.id === product.id && JSON.stringify(item.selectedOptions) === JSON.stringify(selectedOptions))
       if (existingItem) {
         return prevItems.map((item) =>
-          item.id === product.id
+          item.id === product.id && JSON.stringify(item.selectedOptions) === JSON.stringify(selectedOptions)
             ? { ...item, quantity: item.quantity + quantity }
             : item
         )
       }
-      return [...prevItems, { ...product, quantity, price: product.price.toString() }]
+      return [...prevItems, { ...product, quantity, selectedOptions, price: product.price.toString() }]
     })
   }
 

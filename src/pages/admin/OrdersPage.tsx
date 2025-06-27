@@ -19,7 +19,13 @@ interface Order {
   phone: string
   address: string
   city: string
-  items: Array<{ name: string; quantity: number }>
+  items: Array<{
+    productName: string
+    quantity: number
+    selectedOptions: Record<string, string>
+    productPrice: string
+  }>
+  totalPrice?: number
   createdAt?: { seconds: number }
 }
 
@@ -33,7 +39,7 @@ function ordersToCSV(orders: Order[]) {
     order.phone,
     order.city,
     order.address,
-    order.items.map(item => `${item.name} x${item.quantity}`).join(" | ")
+    order.items.map(item => `${item.productName} x${item.quantity} (${item.productPrice})`).join(" | ")
   ])
   const csv = [header, ...rows]
     .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(","))
@@ -49,6 +55,7 @@ export function OrdersPage() {
   const [endDate, setEndDate] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [itemsModalOrder, setItemsModalOrder] = useState<Order | null>(null)
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -162,11 +169,9 @@ export function OrdersPage() {
                   <td className="px-4 py-3 text-sm">{order.city}</td>
                   <td className="px-4 py-3 text-sm">{order.address}</td>
                   <td className="px-4 py-3 text-sm">
-                    {order.items.map((item, idx) => (
-                      <div key={idx}>
-                        {item.name} x{item.quantity}
-                      </div>
-                    ))}
+                    <Button size="sm" variant="outline" onClick={() => setItemsModalOrder(order)}>
+                      Show Items
+                    </Button>
                   </td>
                   <td className="px-4 py-3 text-right">
                     {/* Placeholder for future View button */}
@@ -233,6 +238,34 @@ export function OrdersPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Items Modal */}
+      <Dialog open={!!itemsModalOrder} onOpenChange={open => !open && setItemsModalOrder(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Order Items</DialogTitle>
+          </DialogHeader>
+          {itemsModalOrder && (
+            <div>
+              {itemsModalOrder.items.map((item, idx) => (
+                <div key={idx} className="mb-4 border-b pb-2">
+                  <div className="font-medium">{item.productName} x{item.quantity} <span className="text-gray-500">({item.productPrice})</span></div>
+                  {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
+                    <div className="text-xs text-gray-600 pl-2">
+                      {Object.entries(item.selectedOptions).map(([key, value]) => (
+                        <span key={key} className="mr-2">{key}: {value}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {itemsModalOrder.totalPrice !== undefined && (
+                <div className="mt-2 font-bold text-orange-700">Total: {itemsModalOrder.totalPrice}</div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 
