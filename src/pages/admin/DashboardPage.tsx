@@ -7,8 +7,6 @@ interface DashboardStats {
   totalProducts: number
   totalCategories: number
   averagePrice: number
-  totalReviews: number
-  topRatedProducts: number
   totalBrands: number
 }
 
@@ -17,8 +15,6 @@ export function DashboardPage() {
     totalProducts: 0,
     totalCategories: 0,
     averagePrice: 0,
-    totalReviews: 0,
-    topRatedProducts: 0,
     totalBrands: 0
   })
   const [loading, setLoading] = useState(true)
@@ -35,15 +31,11 @@ export function DashboardPage() {
       const categories = new Set(products.map(p => p.category))
       const brands = new Set(products.map(p => p.brand))
       const totalPrice = products.reduce((sum, p) => sum + parseFloat(p.price.replace("$", "")), 0)
-      const totalReviews = products.reduce((sum, p) => sum + p.reviews, 0)
-      const topRated = products.filter(p => p.rating >= 4.5).length
 
       setStats({
         totalProducts: products.length,
         totalCategories: categories.size,
         averagePrice: products.length > 0 ? totalPrice / products.length : 0,
-        totalReviews,
-        topRatedProducts: topRated,
         totalBrands: brands.size
       })
     } catch (error) {

@@ -83,11 +83,6 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
             
             <div className="space-y-2 bg-white p-3 rounded-lg shadow-sm border">
               <p className="text-sm text-gray-700">{product.description}</p>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Rating:</span>
-                <span className="text-sm font-medium text-black">{product.rating}/5</span>
-                <span className="text-sm text-gray-500">({product.reviews} reviews)</span>
-              </div>
             </div>
 
             {/* Quantity Selection */}

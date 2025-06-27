@@ -39,8 +39,6 @@ export function ProductsPage() {
     price: "",
     image: "",
     description: "",
-    rating: 0,
-    reviews: 0,
     optionIds: [],
   });
 
@@ -85,6 +83,11 @@ export function ProductsPage() {
     }
   };
 
+  // Get unique brands, models, and categories for autocomplete
+  const brandOptions = Array.from(new Set(products.map(p => p.brand).filter(Boolean))).map(b => ({ label: b, value: b }))
+  const modelOptions = Array.from(new Set(products.map(p => p.model).filter(Boolean))).map(m => ({ label: m, value: m }))
+  const categoryOptions = Array.from(new Set(products.map(p => p.category).filter(Boolean))).map(c => ({ label: c, value: c }))
+
   return (
     <div className="">
       <div className="flex justify-between items-center mb-4">
@@ -104,11 +107,27 @@ export function ProductsPage() {
               <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label htmlFor="brand">Brand</Label>
-                <Input id="brand" value={formData.brand || ""} onChange={(e) => setFormData({ ...formData, brand: e.target.value })} required />
+                <Select
+                  inputId="brand"
+                  options={brandOptions}
+                  value={formData.brand ? { label: formData.brand, value: formData.brand } : null}
+                  onChange={option => setFormData({ ...formData, brand: option ? option.value : "" })}
+                  isClearable
+                  isSearchable
+                  placeholder="Select or type brand..."
+                />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="model">Model</Label>
-                <Input id="model" value={formData.model || ""} onChange={(e) => setFormData({ ...formData, model: e.target.value })} required />
+                <Select
+                  inputId="model"
+                  options={modelOptions}
+                  value={formData.model ? { label: formData.model, value: formData.model } : null}
+                  onChange={option => setFormData({ ...formData, model: option ? option.value : "" })}
+                  isClearable
+                  isSearchable
+                  placeholder="Select or type model..."
+                />
               </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -118,7 +137,15 @@ export function ProductsPage() {
               </div>
               <div className="space-y-1">
                 <Label htmlFor="category">Category</Label>
-                <Input id="category" value={formData.category || ""} onChange={(e) => setFormData({ ...formData, category: e.target.value })} required />
+                <Select
+                  inputId="category"
+                  options={categoryOptions}
+                  value={formData.category ? { label: formData.category, value: formData.category } : null}
+                  onChange={option => setFormData({ ...formData, category: option ? option.value : "" })}
+                  isClearable
+                  isSearchable
+                  placeholder="Select or type category..."
+                />
               </div>
               </div>
               <div className="space-y-1">

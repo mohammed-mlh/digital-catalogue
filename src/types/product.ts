@@ -7,8 +7,6 @@ export interface Product {
   price: string
   image: string
   description: string
-  rating: number
-  reviews: number
   optionIds: string[]
 }
 

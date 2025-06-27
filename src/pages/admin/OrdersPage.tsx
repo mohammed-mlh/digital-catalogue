@@ -30,16 +30,28 @@ interface Order {
 }
 
 function ordersToCSV(orders: Order[]) {
-  const header = ["Date", "Name", "Phone", "City", "Address", "Items"]
+  const header = [
+    "Items",
+    "Total Price",
+    "Promo",
+    "Client Name",
+    "Phone",
+    "City",
+    "Address"
+  ]
   const rows = orders.map(order => [
-    order.createdAt?.seconds
-      ? new Date(order.createdAt.seconds * 1000).toLocaleString()
-      : "-",
+    order.items.map(item => {
+      const optionsStr = Object.entries(item.selectedOptions)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(", ");
+      return `${item.productName}${optionsStr ? ` (${optionsStr})` : ""} x${item.quantity} (${item.productPrice})`;
+    }).join(" | "),
+    order.totalPrice ?? "",
+    "", // promo
     order.name,
     order.phone,
     order.city,
-    order.address,
-    order.items.map(item => `${item.productName} x${item.quantity} (${item.productPrice})`).join(" | ")
+    order.address
   ])
   const csv = [header, ...rows]
     .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(","))
