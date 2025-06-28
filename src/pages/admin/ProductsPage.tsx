@@ -109,7 +109,7 @@ export function ProductsPage() {
     e.preventDefault();
     try {
       let imageUrl = formData.image || "";
-      
+
       // Convert image file to data URL if uploaded
       if (imageFile) {
         imageUrl = await convertFileToDataURL(imageFile);
@@ -151,10 +151,10 @@ export function ProductsPage() {
   return (
     <div className="">
       <div className="flex justify-between items-center mb-4">
-      <div>
-            <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-            <p className="text-gray-500 hidden md:block">Manage products</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
+          <p className="text-gray-500 hidden md:block">Manage products</p>
+        </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4" /></Button>
@@ -165,48 +165,63 @@ export function ProductsPage() {
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label htmlFor="brand">Brand</Label>
-                <Select
-                  inputId="brand"
-                  options={brandOptions}
-                  value={formData.brand ? { label: formData.brand, value: formData.brand } : null}
-                  onChange={option => setFormData({ ...formData, brand: option ? option.value : "" })}
-                  isClearable
-                  isSearchable
-                  placeholder=""
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="model">Model</Label>
-                <Select
-                  inputId="model"
-                  options={modelOptions}
-                  value={formData.model ? { label: formData.model, value: formData.model } : null}
-                  onChange={option => setFormData({ ...formData, model: option ? option.value : "" })}
-                  isClearable
-                  isSearchable
-                  placeholder=""
-                />
-              </div>
+                <div className="space-y-1">
+                  <Label htmlFor="brand">Brand</Label>
+                  <Select
+                    inputId="brand"
+                    options={brandOptions}
+                    value={formData.brand ? { label: formData.brand, value: formData.brand } : null}
+                    onChange={option => setFormData({ ...formData, brand: option ? option.value : "" })}
+                    isClearable
+                    isSearchable
+                    placeholder=""
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="model">Model</Label>
+                  <Select
+                    inputId="model"
+                    options={modelOptions}
+                    value={formData.model ? { label: formData.model, value: formData.model } : null}
+                    onChange={option => setFormData({ ...formData, model: option ? option.value : "" })}
+                    isClearable
+                    isSearchable
+                    placeholder=""
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" value={formData.name || ""} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                <div className="space-y-1">
+                  <Label htmlFor="name">Name</Label>
+                  <Input id="name" value={formData.name || ""} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    inputId="category"
+                    options={categoryOptions}
+                    value={formData.category ? { label: formData.category, value: formData.category } : null}
+                    onChange={option => setFormData({ ...formData, category: option ? option.value : "" })}
+                    isClearable
+                    isSearchable
+                    placeholder=""
+                  />
+                </div>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="options">Options</Label>
                 <Select
-                  inputId="category"
-                  options={categoryOptions}
-                  value={formData.category ? { label: formData.category, value: formData.category } : null}
-                  onChange={option => setFormData({ ...formData, category: option ? option.value : "" })}
-                  isClearable
-                  isSearchable
-                  placeholder=""
+                  isMulti
+                  inputId="options"
+                  options={availableOptions.map(opt => ({ label: opt.name, value: opt.id }))}
+                  value={availableOptions
+                    .filter(opt => formData.optionIds?.includes(opt.id))
+                    .map(opt => ({ label: opt.name, value: opt.id }))}
+                  onChange={selected => setFormData({
+                    ...formData,
+                    optionIds: selected.map((item) => item.value),
+                  })}
                 />
-              </div>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="price">Price</Label>
@@ -237,21 +252,7 @@ export function ProductsPage() {
                   )}
                 </div>
               </div>
-              <div className="space-y-1">
-                <Label htmlFor="options">Options</Label>
-                <Select
-                  isMulti
-                  inputId="options"
-                  options={availableOptions.map(opt => ({ label: opt.name, value: opt.id }))}
-                  value={availableOptions
-                    .filter(opt => formData.optionIds?.includes(opt.id))
-                    .map(opt => ({ label: opt.name, value: opt.id }))}
-                  onChange={selected => setFormData({
-                    ...formData,
-                    optionIds: selected.map((item) => item.value),
-                  })}
-                />
-              </div>
+
               <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>
                   Cancel
