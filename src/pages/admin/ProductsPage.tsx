@@ -31,6 +31,8 @@ export function ProductsPage() {
   const [availableOptions, setAvailableOptions] = useState<Option[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [formData, setFormData] = useState<Partial<ProductInput>>({
     name: "",
     brand: "",
@@ -65,22 +67,80 @@ export function ProductsPage() {
     }
   };
 
+  // Convert file to data URL
+  const convertFileToDataURL = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      brand: "",
+      model: "",
+      category: "",
+      price: "",
+      image: "",
+      description: "",
+      optionIds: [],
+    });
+    setImageFile(null);
+    setImagePreview("");
+    setEditingProduct(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let imageUrl = formData.image || "";
+      
+      // Convert image file to data URL if uploaded
+      if (imageFile) {
+        imageUrl = await convertFileToDataURL(imageFile);
+      }
+
+      const productData = {
+        ...formData,
+        image: imageUrl,
+      };
+
       if (editingProduct) {
-        await updateProduct(editingProduct.id, formData as ProductInput);
+        await updateProduct(editingProduct.id, productData as ProductInput);
         toast({ title: "Updated", description: "Product updated." });
       } else {
-        await createProduct(formData as ProductInput);
+        await createProduct(productData as ProductInput);
         toast({ title: "Added", description: "Product created." });
       }
       setIsDialogOpen(false);
-      setEditingProduct(null);
+      resetForm();
       loadProducts();
     } catch (_err) {
       toast({ title: "Error", description: "Could not save product.", variant: "destructive" });
     }
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setFormData({ ...product });
+    setImagePreview(product.image);
+    setImageFile(null);
+    setIsDialogOpen(true);
   };
 
   // Get unique brands, models, and categories for autocomplete
@@ -114,7 +174,7 @@ export function ProductsPage() {
                   onChange={option => setFormData({ ...formData, brand: option ? option.value : "" })}
                   isClearable
                   isSearchable
-                  placeholder="Select or type brand..."
+                  placeholder=""
                 />
               </div>
               <div className="space-y-1">
@@ -126,7 +186,7 @@ export function ProductsPage() {
                   onChange={option => setFormData({ ...formData, model: option ? option.value : "" })}
                   isClearable
                   isSearchable
-                  placeholder="Select or type model..."
+                  placeholder=""
                 />
               </div>
               </div>
@@ -144,7 +204,7 @@ export function ProductsPage() {
                   onChange={option => setFormData({ ...formData, category: option ? option.value : "" })}
                   isClearable
                   isSearchable
-                  placeholder="Select or type category..."
+                  placeholder=""
                 />
               </div>
               </div>
@@ -157,8 +217,25 @@ export function ProductsPage() {
                 <Textarea id="description" value={formData.description || ""} onChange={(e) => setFormData({ ...formData, description: e.target.value })} required />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="image">Image URL</Label>
-                <Input id="image" value={formData.image || ""} onChange={(e) => setFormData({ ...formData, image: e.target.value })} />
+                <Label htmlFor="image">Image</Label>
+                <div className="space-y-2">
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="cursor-pointer"
+                  />
+                  {(imagePreview || formData.image) && (
+                    <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
+                      <img
+                        src={imagePreview || formData.image}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="options">Options</Label>
@@ -209,11 +286,7 @@ export function ProductsPage() {
                   <div className="flex gap-2">
                     <Button
                       size="sm"
-                      onClick={() => {
-                        setEditingProduct(product);
-                        setFormData({ ...product });
-                        setIsDialogOpen(true);
-                      }}
+                      onClick={() => handleEditProduct(product)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>

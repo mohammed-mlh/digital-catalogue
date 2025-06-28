@@ -27,9 +27,7 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
   const [quantity, setQuantity] = useState(1)
   const { addToCart } = useCart()
-  console.log(product);
   
-
   // console.log(product)
   const handleOptionChange = (optionName: string, value: string) => {
     setSelectedOptions(prev => ({
@@ -88,13 +86,33 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
             {/* Quantity Selection */}
             <div className="space-y-2 bg-white p-3 rounded-lg shadow-sm border">
               <Label className="text-sm text-gray-700">Quantity</Label>
-              <Input
-                type="number"
-                min="1"
-                value={quantity}
-                onChange={(e) => handleQuantityChange(e.target.value)}
-                className="w-24"
-              />
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="h-8 w-8 p-0"
+                >
+                  -
+                </Button>
+                <Input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => handleQuantityChange(e.target.value)}
+                  className="w-16 text-center"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="h-8 w-8 p-0"
+                >
+                  +
+                </Button>
+              </div>
             </div>
 
             {product.options.length > 0 && (
