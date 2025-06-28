@@ -2,10 +2,9 @@ import { useEffect, useState } from "react"
 import { collection, getDocs, orderBy, query } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { Button } from "@/components/ui/button"
-import { Calendar, X, Download, Filter } from "lucide-react"
+import { Download, Filter } from "lucide-react"
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
