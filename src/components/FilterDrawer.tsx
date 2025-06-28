@@ -31,7 +31,7 @@ export function FilterDrawer({
         </Button>
       </DrawerTrigger>
       <DrawerContent>
-        <div className="mx-auto w-full max-w-sm">
+        <div className="">
           <DrawerHeader>
             <DrawerTitle className="text-black">Filters</DrawerTitle>
           </DrawerHeader>
