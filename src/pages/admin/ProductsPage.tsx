@@ -51,8 +51,8 @@ export function ProductsPage() {
     try {
       const data = await getProducts();
       setProducts(data);
-    } catch (err) {
-      console.error(err);
+    } catch (_err) {
+      console.error(_err);
     }
   };
 
@@ -60,8 +60,8 @@ export function ProductsPage() {
     try {
       const data = await getAllOptions(); // assumed to return Option[]
       setAvailableOptions(data);
-    } catch (err) {
-      console.error(err);
+    } catch (_err) {
+      console.error(_err);
     }
   };
 
@@ -78,7 +78,7 @@ export function ProductsPage() {
       setIsDialogOpen(false);
       setEditingProduct(null);
       loadProducts();
-    } catch (err) {
+    } catch (_err) {
       toast({ title: "Error", description: "Could not save product.", variant: "destructive" });
     }
   };
@@ -228,7 +228,8 @@ export function ProductsPage() {
                           await deleteProduct(product.id);
                           loadProducts();
                           toast({ title: "Deleted", description: "Product deleted successfully." });
-                        } catch (err) {
+                        } catch (_err) {
+                          console.error(_err);
                           toast({ title: "Error", description: "Failed to delete product.", variant: "destructive" });
                         }
                       }}

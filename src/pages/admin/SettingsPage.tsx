@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { db } from "@/lib/firebase"
 import { doc, getDoc, setDoc } from "firebase/firestore"
+import { toast } from "@/components/ui/use-toast"
 
 export function SettingsPage() {
   const [whatsapp, setWhatsapp] = useState("")
@@ -24,8 +25,8 @@ export function SettingsPage() {
           await setDoc(settingsRef, { whatsapp: "" })
           setWhatsapp("")
         }
-      } catch (err) {
-        setError("Failed to load settings.")
+      } catch (_err) {
+        console.error("Failed to load settings:", _err)
       } finally {
         setLoading(false)
       }
@@ -42,8 +43,9 @@ export function SettingsPage() {
       await setDoc(settingsRef, { whatsapp })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
-    } catch (err) {
-      setError("Failed to save settings.")
+    } catch (_err) {
+      console.error("Failed to save settings:", _err)
+      toast({ title: "Error", description: "Failed to save settings", variant: "destructive" })
     }
   }
 

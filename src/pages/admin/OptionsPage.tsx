@@ -21,8 +21,8 @@ export function OptionsPage() {
     try {
       const data = await getAllOptions()
       setOptions(data)
-    } catch (error) {
-      console.error("Error loading options:", error)
+    } catch (_error) {
+      console.error("Failed to load options:", _error)
       toast({ title: "Error", description: "Failed to load options", variant: "destructive" })
     } finally {
       setLoading(false)

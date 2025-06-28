@@ -46,7 +46,7 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
 
   const handleAddToCart = () => {
     // Convert ProductWithOptions to Product by omitting 'options' and adding optionIds: []
-    const { options, ...rest } = product;
+    const { options: _, ...rest } = product;
     const productWithoutOptions = { ...rest, optionIds: [] };
     addToCart(productWithoutOptions, quantity, selectedOptions)
     onClose()

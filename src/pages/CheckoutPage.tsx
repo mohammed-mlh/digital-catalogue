@@ -91,8 +91,8 @@ export function CheckoutPage() {
       // Clear cart and redirect to WhatsApp
       clearCart()
       window.location.href = `https://wa.me/${whatsapp.replace(/[^\d]/g, "")}?text=${message}`
-    } catch (err: any) {
-      setError(err.message || "An error occurred during checkout.")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An error occurred during checkout.")
       setIsProcessing(false)
     }
   }

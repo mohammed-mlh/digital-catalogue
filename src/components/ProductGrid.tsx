@@ -22,7 +22,7 @@ export function ProductGrid() {
       try {
         const prds = await getProductsWithOptions();
         setProducts(prds)
-      } catch (err) {
+      } catch (_err) {
         setError("Failed to load products.")
       } finally {
         setLoading(false)

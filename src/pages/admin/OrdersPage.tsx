@@ -78,7 +78,7 @@ export function OrdersPage() {
         setOrders(
           snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Order[]
         )
-      } catch (err) {
+      } catch (_err) {
         setError("Failed to load orders.")
       } finally {
         setLoading(false)

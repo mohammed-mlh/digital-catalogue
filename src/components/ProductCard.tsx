@@ -4,9 +4,7 @@ import { useState } from "react"
 import { ProductDrawer } from "./ProductDrawer"
 import { ProductWithOptions } from "@/types/product"
 
-interface ProductCardProps extends ProductWithOptions {}
-
-export function ProductCard(product: ProductCardProps) {
+export function ProductCard(product: ProductWithOptions) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
   const handleCardClick = () => {

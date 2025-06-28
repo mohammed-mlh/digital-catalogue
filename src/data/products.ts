@@ -10,7 +10,7 @@ export const products: Product[] = [
       price: "$45",
       image: "https://picsum.photos/seed/sparkplug/400/200",
       description: "High-performance iridium spark plugs for improved ignition and fuel efficiency. Compatible with Ford Mustang 5.0L V8 engines.",
-      optionIds: [],
+      optionIds: []
     },
     {
       id: "2",
