@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -159,7 +160,7 @@ export function ProductsPage() {
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4" /></Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingProduct ? "Edit" : "Add"} Product</DialogTitle>
             </DialogHeader>
@@ -167,11 +168,11 @@ export function ProductsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <Label htmlFor="brand">Brand</Label>
-                  <Select
+                  <CreatableSelect
                     inputId="brand"
                     options={brandOptions}
                     value={formData.brand ? { label: formData.brand, value: formData.brand } : null}
-                    onChange={option => setFormData({ ...formData, brand: option ? option.value : "" })}
+                    onChange={(option: any) => setFormData({ ...formData, brand: option ? option.value : "" })}
                     isClearable
                     isSearchable
                     placeholder=""
@@ -179,11 +180,11 @@ export function ProductsPage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="model">Model</Label>
-                  <Select
+                  <CreatableSelect
                     inputId="model"
                     options={modelOptions}
                     value={formData.model ? { label: formData.model, value: formData.model } : null}
-                    onChange={option => setFormData({ ...formData, model: option ? option.value : "" })}
+                    onChange={(option: any) => setFormData({ ...formData, model: option ? option.value : "" })}
                     isClearable
                     isSearchable
                     placeholder=""
@@ -197,11 +198,11 @@ export function ProductsPage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="category">Category</Label>
-                  <Select
+                  <CreatableSelect
                     inputId="category"
                     options={categoryOptions}
                     value={formData.category ? { label: formData.category, value: formData.category } : null}
-                    onChange={option => setFormData({ ...formData, category: option ? option.value : "" })}
+                    onChange={(option: any) => setFormData({ ...formData, category: option ? option.value : "" })}
                     isClearable
                     isSearchable
                     placeholder=""
