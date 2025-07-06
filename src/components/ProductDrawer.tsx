@@ -58,9 +58,11 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
 
   return (
     <Drawer open={isOpen} onOpenChange={onClose}>
-      <DrawerContent className="h-[90vh] flex flex-col">
+      <DrawerContent className="h-screen max-h-screen flex flex-col">
         <DrawerHeader className="bg-white flex-none border-b">
-          <DrawerTitle className="text-black">{product.name}</DrawerTitle>
+          <DrawerTitle className="text-black">
+            {product.name} (from {product.price})
+          </DrawerTitle>
           <DrawerDescription className="text-gray-600">
             {product.brand} {product.model}
           </DrawerDescription>
@@ -72,13 +74,6 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
             className="w-full h-48 object-cover rounded-lg shadow-sm"
           />
           <div className="mt-4 space-y-4">
-            <div className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border">
-              <span className="text-sm text-gray-600">Price</span>
-              <span className="text-lg font-bold text-black">
-                {product.price}
-              </span>
-            </div>
-            
             <div className="space-y-2 bg-white p-3 rounded-lg shadow-sm border">
               <p className="text-sm text-gray-700">{product.description}</p>
             </div>
@@ -119,35 +114,37 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
               <div className="space-y-4 bg-white p-3 rounded-lg shadow-sm border">
                 <h4 className="font-medium text-black">Options</h4>
                 {product.options.map((option) => (
-                  <div key={option.name} className="space-y-3">
-                    <Label className="text-sm text-gray-700 capitalize">
+                  <div key={option.name} className="flex items-center gap-4 space-y-0">
+                    <Label className="text-sm text-gray-700 capitalize min-w-[100px] flex-shrink-0">
                       {option.name}
                     </Label>
-                    <RadioGroup
-                      value={selectedOptions[option.name]}
-                      onValueChange={(value: string) => handleOptionChange(option.name, value)}
-                      className="flex flex-wrap gap-3"
-                    >
-                      {option.values.map((opt) => (
-                        <div key={opt} className="flex items-center">
-                          <RadioGroupItem
-                            value={opt}
-                            id={`${option.name}-${opt}`}
-                            className="peer sr-only"
-                          />
-                          <Label
-                            htmlFor={`${option.name}-${opt}`}
-                            className={cn(
-                              "flex items-center justify-center px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors",
-                              "border border-gray-200 hover:border-gray-300",
-                              "peer-data-[state=checked]:bg-orange-100 peer-data-[state=checked]:border-orange-500 peer-data-[state=checked]:text-orange-700"
-                            )}
-                          >
-                            {opt}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
+                    <div className="flex-1 overflow-x-auto">
+                      <RadioGroup
+                        value={selectedOptions[option.name]}
+                        onValueChange={(value: string) => handleOptionChange(option.name, value)}
+                        className="flex flex-nowrap gap-3"
+                      >
+                        {option.values.map((opt) => (
+                          <div key={opt} className="flex items-center">
+                            <RadioGroupItem
+                              value={opt}
+                              id={`${option.name}-${opt}`}
+                              className="peer sr-only"
+                            />
+                            <Label
+                              htmlFor={`${option.name}-${opt}`}
+                              className={cn(
+                                "flex items-center justify-center px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors whitespace-nowrap",
+                                "border border-gray-200 hover:border-gray-300",
+                                "peer-data-[state=checked]:bg-orange-100 peer-data-[state=checked]:border-orange-500 peer-data-[state=checked]:text-orange-700"
+                              )}
+                            >
+                              {opt}
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </div>
                   </div>
                 ))}
               </div>
