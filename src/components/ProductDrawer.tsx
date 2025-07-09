@@ -119,31 +119,31 @@ export function ProductDrawer({ isOpen, onClose, product }: ProductDrawerProps) 
                       {option.name}
                     </Label>
                     <div className="flex-1 overflow-x-auto">
-                      <RadioGroup
-                        value={selectedOptions[option.name]}
-                        onValueChange={(value: string) => handleOptionChange(option.name, value)}
+                    <RadioGroup
+                      value={selectedOptions[option.name]}
+                      onValueChange={(value: string) => handleOptionChange(option.name, value)}
                         className="flex flex-nowrap gap-3"
-                      >
-                        {option.values.map((opt) => (
-                          <div key={opt} className="flex items-center">
-                            <RadioGroupItem
-                              value={opt}
-                              id={`${option.name}-${opt}`}
-                              className="peer sr-only"
-                            />
-                            <Label
-                              htmlFor={`${option.name}-${opt}`}
-                              className={cn(
+                    >
+                      {option.values.map((opt) => (
+                        <div key={opt} className="flex items-center">
+                          <RadioGroupItem
+                            value={opt}
+                            id={`${option.name}-${opt}`}
+                            className="peer sr-only"
+                          />
+                          <Label
+                            htmlFor={`${option.name}-${opt}`}
+                            className={cn(
                                 "flex items-center justify-center px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors whitespace-nowrap",
-                                "border border-gray-200 hover:border-gray-300",
-                                "peer-data-[state=checked]:bg-orange-100 peer-data-[state=checked]:border-orange-500 peer-data-[state=checked]:text-orange-700"
-                              )}
-                            >
-                              {opt}
-                            </Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
+                              "border border-gray-200 hover:border-gray-300",
+                              "peer-data-[state=checked]:bg-orange-100 peer-data-[state=checked]:border-orange-500 peer-data-[state=checked]:text-orange-700"
+                            )}
+                          >
+                            {opt}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
                     </div>
                   </div>
                 ))}

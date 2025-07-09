@@ -16,11 +16,25 @@ interface FilterDrawerProps {
     brand: string
     priceRange: string
   }) => void
+  categories: string[]
+  brands: string[]
+  models: string[]
+  filters: {
+    category: string
+    brand: string
+    priceRange: string
+  }
+  searchQuery: string
 }
 
 export function FilterDrawer({
   onSearch,
   onFilterChange,
+  categories,
+  brands,
+  models,
+  filters,
+  searchQuery,
 }: FilterDrawerProps) {
   return (
     <Drawer>
@@ -39,6 +53,11 @@ export function FilterDrawer({
             <ProductFilters
               onSearch={onSearch}
               onFilterChange={onFilterChange}
+              categories={categories}
+              brands={brands}
+              models={models}
+              filters={filters}
+              searchQuery={searchQuery}
             />
           </div>
         </div>

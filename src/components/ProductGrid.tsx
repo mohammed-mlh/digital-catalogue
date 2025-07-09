@@ -3,17 +3,50 @@ import { ProductCard } from "./ProductCard"
 import { FilterDrawer } from "./FilterDrawer"
 import { getProductsWithOptions } from "@/models/products"
 import { ProductWithOptions } from "@/types/product"
+import Loader from "@/components/ui/Loader"
+import { useSearchParams } from "react-router-dom"
 
 export function ProductGrid() {
   const [products, setProducts] = useState<ProductWithOptions[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [activeFilters, setActiveFilters] = useState({
-    category: "all",
-    brand: "all",
-    priceRange: "all"
-  })
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initialize filters from search params
+  const initialFilters = {
+    category: searchParams.get("category") || "all",
+    brand: searchParams.get("brand") || "all",
+    priceRange: searchParams.get("priceRange") || "all"
+  };
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [activeFilters, setActiveFilters] = useState(initialFilters);
+
+  // Update search params when filters or search change
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+    setSearchParams({
+      ...activeFilters,
+      q: value
+    });
+  };
+
+  const handleFilterChange = (filters: typeof activeFilters) => {
+    setActiveFilters(filters);
+    setSearchParams({
+      ...filters,
+      q: searchQuery
+    });
+  };
+
+  // Keep UI in sync with URL (when user navigates back/forward)
+  useEffect(() => {
+    setActiveFilters({
+      category: searchParams.get("category") || "all",
+      brand: searchParams.get("brand") || "all",
+      priceRange: searchParams.get("priceRange") || "all"
+    });
+    setSearchQuery(searchParams.get("q") || "");
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -30,6 +63,11 @@ export function ProductGrid() {
     }
     fetchProducts()
   }, [])
+
+  // Extract unique categories, brands, and models
+  const categories = Array.from(new Set(products.map(p => p.category))).filter(Boolean)
+  const brands = Array.from(new Set(products.map(p => p.brand))).filter(Boolean)
+  const models = Array.from(new Set(products.map(p => p.model))).filter(Boolean)
 
   const filteredProducts = products.filter(product => {
     // Search filter
@@ -67,12 +105,17 @@ export function ProductGrid() {
       <div className="p-2">
         <div className="mb-4">
           <FilterDrawer
-            onSearch={setSearchQuery}
-            onFilterChange={setActiveFilters}
+            onSearch={handleSearch}
+            onFilterChange={handleFilterChange}
+            categories={categories}
+            brands={brands}
+            models={models}
+            filters={activeFilters}
+            searchQuery={searchQuery}
           />
         </div>
         {loading ? (
-          <div className="text-center py-12 text-gray-500">Loading...</div>
+          <Loader className="py-12" />
         ) : error ? (
           <div className="text-center py-12 text-red-600">{error}</div>
         ) : (

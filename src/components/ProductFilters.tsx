@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useState } from "react"
+import React from "react"
 
 interface ProductFiltersProps {
   onSearch: (value: string) => void
@@ -10,18 +11,32 @@ interface ProductFiltersProps {
     brand: string
     priceRange: string
   }) => void
+  categories: string[]
+  brands: string[]
+  models: string[]
+  filters: {
+    category: string
+    brand: string
+    priceRange: string
+  }
+  searchQuery: string
 }
 
-export function ProductFilters({ onSearch, onFilterChange }: ProductFiltersProps) {
-  const [filters, setFilters] = useState({
-    category: "all",
-    brand: "all",
-    priceRange: "all"
-  })
+export function ProductFilters({ onSearch, onFilterChange, categories, brands, models, filters, searchQuery }: ProductFiltersProps) {
+  const [localFilters, setLocalFilters] = useState(filters)
+  const [localSearch, setLocalSearch] = useState(searchQuery)
+
+  // Keep local state in sync with props
+  React.useEffect(() => {
+    setLocalFilters(filters)
+  }, [filters])
+  React.useEffect(() => {
+    setLocalSearch(searchQuery)
+  }, [searchQuery])
 
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...filters, [key]: value }
-    setFilters(newFilters)
+    const newFilters = { ...localFilters, [key]: value }
+    setLocalFilters(newFilters)
     onFilterChange(newFilters)
   }
 
@@ -34,7 +49,11 @@ export function ProductFilters({ onSearch, onFilterChange }: ProductFiltersProps
         <Input
           id="search"
           placeholder="Search by name, brand, or model..."
-          onChange={(e) => onSearch(e.target.value)}
+          value={localSearch}
+          onChange={(e) => {
+            setLocalSearch(e.target.value)
+            onSearch(e.target.value)
+          }}
           className="border-orange-200 focus:border-orange-300 focus:ring-orange-200"
         />
       </div>
@@ -43,7 +62,7 @@ export function ProductFilters({ onSearch, onFilterChange }: ProductFiltersProps
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">Category</Label>
           <RadioGroup
-            value={filters.category}
+            value={localFilters.category}
             onValueChange={(value) => handleFilterChange("category", value)}
             className="flex flex-wrap gap-3"
           >
@@ -56,31 +75,24 @@ export function ProductFilters({ onSearch, onFilterChange }: ProductFiltersProps
                 All
               </Label>
             </div>
-            <div className="flex items-center">
-              <RadioGroupItem value="engine" id="category-engine" className="peer sr-only" />
-              <Label
-                htmlFor="category-engine"
-                className="flex items-center justify-center px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors border border-orange-200 hover:border-orange-300 peer-data-[state=checked]:bg-orange-100 peer-data-[state=checked]:border-orange-500 peer-data-[state=checked]:text-orange-700"
-              >
-                Engine
-              </Label>
-            </div>
-            <div className="flex items-center">
-              <RadioGroupItem value="brakes" id="category-brakes" className="peer sr-only" />
-              <Label
-                htmlFor="category-brakes"
-                className="flex items-center justify-center px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors border border-orange-200 hover:border-orange-300 peer-data-[state=checked]:bg-orange-100 peer-data-[state=checked]:border-orange-500 peer-data-[state=checked]:text-orange-700"
-              >
-                Brakes
-              </Label>
-            </div>
+            {categories.map((cat) => (
+              <div className="flex items-center" key={cat}>
+                <RadioGroupItem value={cat.toLowerCase()} id={`category-${cat.toLowerCase()}`} className="peer sr-only" />
+                <Label
+                  htmlFor={`category-${cat.toLowerCase()}`}
+                  className="flex items-center justify-center px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors border border-orange-200 hover:border-orange-300 peer-data-[state=checked]:bg-orange-100 peer-data-[state=checked]:border-orange-500 peer-data-[state=checked]:text-orange-700"
+                >
+                  {cat}
+                </Label>
+              </div>
+            ))}
           </RadioGroup>
         </div>
 
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">Brand</Label>
           <RadioGroup
-            value={filters.brand}
+            value={localFilters.brand}
             onValueChange={(value) => handleFilterChange("brand", value)}
             className="flex flex-wrap gap-3"
           >
@@ -93,31 +105,24 @@ export function ProductFilters({ onSearch, onFilterChange }: ProductFiltersProps
                 All
               </Label>
             </div>
-            <div className="flex items-center">
-              <RadioGroupItem value="ford" id="brand-ford" className="peer sr-only" />
-              <Label
-                htmlFor="brand-ford"
-                className="flex items-center justify-center px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors border border-orange-200 hover:border-orange-300 peer-data-[state=checked]:bg-orange-100 peer-data-[state=checked]:border-orange-500 peer-data-[state=checked]:text-orange-700"
-              >
-                Ford
-              </Label>
-            </div>
-            <div className="flex items-center">
-              <RadioGroupItem value="toyota" id="brand-toyota" className="peer sr-only" />
-              <Label
-                htmlFor="brand-toyota"
-                className="flex items-center justify-center px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors border border-orange-200 hover:border-orange-300 peer-data-[state=checked]:bg-orange-100 peer-data-[state=checked]:border-orange-500 peer-data-[state=checked]:text-orange-700"
-              >
-                Toyota
-              </Label>
-            </div>
+            {brands.map((brand) => (
+              <div className="flex items-center" key={brand}>
+                <RadioGroupItem value={brand.toLowerCase()} id={`brand-${brand.toLowerCase()}`} className="peer sr-only" />
+                <Label
+                  htmlFor={`brand-${brand.toLowerCase()}`}
+                  className="flex items-center justify-center px-3 py-1.5 text-sm rounded-md cursor-pointer transition-colors border border-orange-200 hover:border-orange-300 peer-data-[state=checked]:bg-orange-100 peer-data-[state=checked]:border-orange-500 peer-data-[state=checked]:text-orange-700"
+                >
+                  {brand}
+                </Label>
+              </div>
+            ))}
           </RadioGroup>
         </div>
 
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">Price Range</Label>
           <RadioGroup
-            value={filters.priceRange}
+            value={localFilters.priceRange}
             onValueChange={(value) => handleFilterChange("priceRange", value)}
             className="flex flex-wrap gap-3"
           >
